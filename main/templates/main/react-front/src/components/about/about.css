@@ -1,0 +1,8 @@
+h3#aboutTag {
+    color: tomato;
+    border: black solid 0.2rem;
+    width: 50vw;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    background-color: #888;
+}

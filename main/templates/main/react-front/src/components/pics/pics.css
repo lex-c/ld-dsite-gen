@@ -1,0 +1,31 @@
+.wrapper { 
+    background:#111;
+    margin: auto; 
+    text-align: center; 
+    position: relative;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 2rem;
+    margin-bottom: 20px !important;
+    width: 70vw;
+    padding: 1rem;
+}
+.scrolls { 
+    overflow-x: scroll;
+    overflow-y: hidden;
+    height: min-content;
+    white-space: nowrap;
+    padding: 1.5rem;
+} 
+img { 
+    border: 0.03rem solid #444;
+    border-radius: 0.6rem;
+    margin-left: 0.7rem;
+    margin-right: 0.7rem;
+    height: 700px;
+    cursor: pointer;
+    display:inline-block;
+    *display:inline;
+    *zoom:1;
+    vertical-align:top;
+}
