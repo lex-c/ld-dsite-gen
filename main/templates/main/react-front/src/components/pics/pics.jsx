@@ -6,7 +6,7 @@ export default function Pics() {
     return (
         <div class="wrapper">
             <div class="scrolls">
-                { pics.forEach(picUrl, idx => (<img src={picUrl} id={`pic-${idx}`} className="scroll-pic" alt="pic" />)) }
+                { pics.map((picUrl, idx) => (<img src={picUrl} id={`pic-${idx}`} className="scroll-pic" alt="pic" />)) }
             </div>
         </div>
     );
