@@ -17,8 +17,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "heroku-prebuild": "npm install",
-    "heroku-postbuild": "webpack --config webpack.dev.js"
+    "heroku-prebuild": "npm install --prefix main/templates/main/react-front/build",
+    "heroku-postbuild": "webpack --config webpack.dev.js --prefix main/templates/main/react-front/build"
   },
   "eslintConfig": {
     "extends": [
