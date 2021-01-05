@@ -71,9 +71,9 @@
     "workbox-webpack-plugin": "5.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "cd main/templates/main/react-front && npm run start",
+    "build": "cd main/templates/main/react-front && npm run build",
+    "test": "cd main/templates/main/react-front && npm run test",
     "heroku-prebuild": "npm install --prefix main/templates/main/react-front/build",
     "heroku-postbuild": "webpack --config webpack.dev.js --prefix main/templates/main/react-front/build"
   },
