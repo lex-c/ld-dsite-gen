@@ -1,7 +1,9 @@
 from django.shortcuts import render
+from django.contrib.admin.views.decorators import staff_member_required
 import requests
 import json
 import firebase_admin
+from .models import Pic, PicForm
 
 # Create your views here.
 
@@ -30,3 +32,8 @@ def index(request):
   for row in response.rows:
       print(row.dimension_values[0].value, row.metric_values[0].value)
   return render(request, 'main/react-front/build/index.html')
+
+@staff_member_required(login_url='admin:login', redirect_field_name='next')
+def add_pics_view(request):
+  form = PicForm
+  return render(request, 'main/admin-pics.html', )
