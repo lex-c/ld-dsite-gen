@@ -11,7 +11,7 @@ class PicTagsInline(admin.TabularInline):
 class PicAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
-            'fields': ('firebase_id', 'description')
+            'fields': ('name', 'description')
         }),
     )
     inlines = (PicTagsInline,)

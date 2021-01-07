@@ -11,7 +11,7 @@ class Tag(models.Model):
         return f'{self.name}'
 
 class Pic(models.Model):
-    firebase_id = models.TextField(max_length=2083)
+    name = models.TextField(max_length=2083)
     description = models.CharField(max_length=200)
     tags = models.ManyToManyField(Tag)
 
@@ -21,6 +21,6 @@ class Pic(models.Model):
 class PicForm(ModelForm):
     class Meta:
         model = Pic
-        fields = ['firebase_id', 'description', 'tags']
+        fields = ['name', 'description', 'tags']
 
 # choices=[('latex', 'latex'), ('corporal', 'corporal'), ('cbt', 'cbt'), ('pain', 'pain'), ('legs', 'legs'), ('whips', 'whips'), ('leather', 'leather'), ('butt', 'butt'), ('boots', 'boots'), ('mommy', 'mommy'), ('nurse', 'nurse'),])
