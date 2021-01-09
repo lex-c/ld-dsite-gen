@@ -5,13 +5,13 @@ from .models import Pic, Tag
 
 
 class PicTagsInline(admin.TabularInline):
-    model = Pic.tags.through
+    model = Tag
     extra = 1
 
 class PicAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
-            'fields': ('name', 'description')
+            'fields': ('pic_name', 'description')
         }),
     )
     inlines = (PicTagsInline,)
