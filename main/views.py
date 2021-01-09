@@ -36,18 +36,7 @@ def get_all_pics_db():
   all_pics_db = list(Pic.objects.all().values_list('pic_name', 'tag__tag_name', 'tag__intensity'))
   return all_pics_db
 
-def add_new_output_to_df(user_df, ga_data_dict):
-  for pic_name in list(ga_data_dict.keys()):
-    user_df['interest'][pic_name] = ga_data_dict[pic_name]
-  return user_df
-
-
-
-def index(request):
-  return render(request, 'main/react-front/build/index.html')
-
-
-def send_pics_front(request):
+def get_or_update_user_df(request):
   current_user_df = pd.DataFrame(index=[])
   try:
     current_user_df = pd.read_pickle(os.path.join(BASE_DIR, 'main', 'templates', 'main', 'react-front', 'build', 'static', 'media', f'user_{request.user.id}_df.pkl'))
@@ -55,10 +44,30 @@ def send_pics_front(request):
     print(e)
     pass
   all_pics_db = get_all_pics_db()
-  num_pics_db = len(set([sub_list[0] for sub_list in all_pics_db]))
-  if len(list(current_user_df.index)) < num_pics_db:
-    current_user_df = ml.clean_db_data(all_pics_db)
-  print('curr df:     ', current_user_df)
+  names_pics_db = set([sub_list[0] for sub_list in all_pics_db])
+  names_pics_df = set(list(current_user_df.index))
+  print('curr df before fix:    ', current_user_df)
+  if names_pics_db != names_pics_df:
+    new_current_user_df = ml.clean_db_data(all_pics_db)
+    for name in names_pics_db:
+      if name in names_pics_df:
+        new_current_user_df['interest'][name] = current_user_df['interest'][name]
+    current_user_df = new_current_user_df.sort_values(by=['interest'], axis=0, ascending=False, na_position='last')
+  print('curr df after edit:     ', current_user_df)
+  return current_user_df
+
+def add_new_output_to_df(user_df, ga_data_dict):
+  for pic_name in list(ga_data_dict.keys()):
+    user_df['interest'][pic_name] = ga_data_dict[pic_name]
+  return user_df
+
+
+def index(request):
+  return render(request, 'main/react-front/build/index.html')
+
+
+def send_pics_front(request):
+  current_user_df = get_or_update_user_df(request)
   raw_ga_data = gAnal.get_ga_data()
   all_pics_names = list(current_user_df.index)
   cleaned_ga_data = gAnal.clean_ga_data(raw_ga_data, all_pics_names)
