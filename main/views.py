@@ -51,6 +51,7 @@ def index(request):
 
 
 def send_pics_front(request):
+  print('in the back send pics')
   global current_user_df
   raw_ga_data = gAnal.get_ga_data()
   all_pics_names = list(current_user_df.index)
