@@ -48,17 +48,25 @@ def index(request):
 
 
 def send_pics_front(request):
+  current_user_df = pd.DataFrame(index=[])
+  try:
+    current_user_df = pd.read_pickle(os.path.join(BASE_DIR, 'main', 'templates', 'main', 'react-front', 'build', 'static', 'media', f'user_{request.user.id}_df.pkl'))
+  except Exception as e:
+    print(e)
+    pass
   all_pics_db = get_all_pics_db()
-  current_user_df = ml.clean_db_data(all_pics_db)
+  num_pics_db = len(set([sub_list[0] for sub_list in all_pics_db]))
+  if len(list(current_user_df.index)) < num_pics_db:
+    current_user_df = ml.clean_db_data(all_pics_db)
+  print('curr df:     ', current_user_df)
   raw_ga_data = gAnal.get_ga_data()
   all_pics_names = list(current_user_df.index)
-  print('names:    ', all_pics_names)
-  print('df:    ', current_user_df)
   cleaned_ga_data = gAnal.clean_ga_data(raw_ga_data, all_pics_names)
   if cleaned_ga_data:
     current_user_df = add_new_output_to_df(current_user_df, cleaned_ga_data)
     current_user_df = ml.train_model_predict(current_user_df)
     sorted_df = current_user_df.sort_values(by=['interest'], axis=0, ascending=False, na_position='last')
+    sorted_df.to_pickle(os.path.join(BASE_DIR, 'main', 'templates', 'main', 'react-front', 'build', 'static', 'media', f'user_{request.user.id}_df.pkl'))
     all_pics_names = list(sorted_df.index)
   exp_time = datetime.now() + timedelta(minutes=2)
   exp_time = eastern.localize(exp_time)

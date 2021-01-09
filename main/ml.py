@@ -46,9 +46,9 @@ def train_model_predict(df):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
     clf = svm.LinearSVR()
     clf.fit(X, y)
-    # df_predict = df[~df.index.isin(df_train.index)]
+    # df_predict = df[~df.index.isin(df_train.index)]   if we want to predict only for None value rows
     df_predict = df
-    # if len(list(df_predict.index)) > 0:
+    # if len(list(df_predict.index)) > 0: same as last comment
     df_predict_for_np = df_predict.drop(columns=['interest'])
     np_predict = np.array(df_predict_for_np)
     predictions = clf.predict(np_predict)
