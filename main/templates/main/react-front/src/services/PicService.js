@@ -6,5 +6,8 @@ export function getPicSet() {
         method: 'GET'
     })
     .then(res => res.json())
-    .then(picData => picData)
+    .then(picData => {
+        console.log('picData:     ', picData)
+        return picData
+    })
 }

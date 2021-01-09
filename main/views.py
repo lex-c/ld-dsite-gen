@@ -68,6 +68,7 @@ def send_pics_front(request):
     blob = bucket.blob(f'pics/{name}')
     url = blob.generate_signed_url(expiration=exp_time)
     picsData["picsData"].append([name, url])
+  print(picsData)
   return JsonResponse(picsData)
 
 
