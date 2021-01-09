@@ -54,13 +54,15 @@ def send_pics_front(request):
   print('in the back send pics')
   global current_user_df
   raw_ga_data = gAnal.get_ga_data()
-  all_pics_names = list(current_user_df.index)
+  all_pics_names = list(set([sub_list[0] for sub_list in all_pics_db]))
+  print('names:    ', all_pics_names)
+  print('df:    ', current_user_df)
   cleaned_ga_data = gAnal.clean_ga_data(raw_ga_data, all_pics_names)
   if cleaned_ga_data:
     add_new_output_to_df(cleaned_ga_data)
     current_user_df = ml.train_model_predict(current_user_df)
-  sorted_df = current_user_df.sort_values(by=['interest'], axis=0, ascending=False, na_position='last')
-  all_pics_names = list(sorted_df.index)
+    sorted_df = current_user_df.sort_values(by=['interest'], axis=0, ascending=False, na_position='last')
+    all_pics_names = list(sorted_df.index)
   exp_time = datetime.now() + timedelta(minutes=2)
   exp_time = eastern.localize(exp_time)
   picsData = { "picsData": [  ] }
