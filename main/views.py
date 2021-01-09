@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.fields import CharField
 from django.contrib.postgres.aggregates.general import ArrayAgg, ArrayField 
 from django.contrib.admin.views.decorators import staff_member_required
+import os
 import requests
 import json
 from datetime import datetime, timedelta
@@ -20,8 +21,9 @@ import firebase_admin
 from firebase_admin import storage, credentials
 
 # Create your views here.
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-fb_cred = credentials.Certificate('/Users/ls/Documents/code/mijn_site/main/client_secrets.json')
+fb_cred = credentials.Certificate(os.path.join(BASE_DIR, 'main', 'client_secrets.json'))
 default_app = firebase_admin.initialize_app(fb_cred, {
   'storageBucket': 'ld-dsite-gen.appspot.com'
 })
@@ -51,12 +53,13 @@ def index(request):
 def send_pics_front(request):
   global current_user_df
   raw_ga_data = gAnal.get_ga_data()
+  all_pics_names = list(current_user_df.index)
   cleaned_ga_data = gAnal.clean_ga_data(raw_ga_data, all_pics_names)
   if cleaned_ga_data:
     add_new_output_to_df(cleaned_ga_data)
     current_user_df = ml.train_model_predict(current_user_df)
   sorted_df = current_user_df.sort_values(by=['interest'], axis=0, ascending=False, na_position='last')
-  all_pics_names = list(current_user_df.index)
+  all_pics_names = list(sorted_df.index)
   exp_time = datetime.now() + timedelta(minutes=2)
   exp_time = eastern.localize(exp_time)
   picsData = { "picsData": [  ] }
