@@ -31,7 +31,6 @@ def clean_db_data(pics_from_db):
         else:
           continue
     df = pd.DataFrame(new_arr)
-    df = df.drop(df.columns[[0]], axis=1)
     df.columns = df.iloc[0]
     df = df.drop(labels=[0], axis=0)
     all_pic_names = [sub_arr[0] for sub_arr in arr]
