@@ -2,6 +2,8 @@ from django.db import models
 from django.forms import ModelForm
 from django.contrib import admin
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.files.uploadhandler import FileUploadHandler
+from django.core.files.uploadedfile import UploadedFile
 
 # Create your models here.
 
@@ -27,3 +29,9 @@ class Tag(models.Model):
     def __str__(self):
         return f'{self.tag_name}'
 # choices=[('latex', 'latex'), ('corporal', 'corporal'), ('cbt', 'cbt'), ('pain', 'pain'), ('legs', 'legs'), ('whips', 'whips'), ('leather', 'leather'), ('butt', 'butt'), ('boots', 'boots'), ('mommy', 'mommy'), ('nurse', 'nurse'),])
+
+class FBFileUpload(FileUploadHandler):
+    def receive_data_chunk(self, raw_data, start):
+        return raw_data
+    def file_complete(file, file_size):
+        return UploadedFile(file=file, name='images', content_type='image/jpeg', size=file_size)

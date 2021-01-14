@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Pics</title>
+</head>
+<body>
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <label>Tags (please enter seperated by comma and space)</label>
+        <textarea name="tags" type="input" rows="" cols=""></textarea>
+        <input type="file" name="images" encType="multipart/form-data" multiple />
+        <button type="submit">ADD</button>
+    </form>
+</body>
+</html>

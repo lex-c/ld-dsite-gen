@@ -1,5 +1,5 @@
 {
-    "editor.hover.enabled": true,
+    "editor.hover.enabled": false,
     "[json]": {
 
         "editor.quickSuggestions": {

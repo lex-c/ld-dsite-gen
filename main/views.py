@@ -4,16 +4,19 @@ from django.db import models
 from django.db.models.fields import CharField
 from django.contrib.postgres.aggregates.general import ArrayAgg, ArrayField 
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.csrf import csrf_exempt
 import os
 import requests
 import json
+import uuid
 from datetime import datetime, timedelta
 import pytz
-from .models import Pic, PicForm, Tag
+from .models import Pic, PicForm, Tag, FBFileUpload
 from . import gAnal, ml
-
+import io, base64
 import pandas as pd
 import numpy as np
+import cv2
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 
@@ -28,7 +31,7 @@ default_app = firebase_admin.initialize_app(fb_cred, {
   'storageBucket': 'ld-dsite-gen.appspot.com'
 })
 
-bucket = storage.bucket()
+bucket = storage.bucket('ld-dsite-gen.appspot.com')
 eastern = pytz.timezone('US/Eastern')
 
 
@@ -72,6 +75,10 @@ def send_pics_front(request):
   all_pics_names = list(current_user_df.index)
   cleaned_ga_data = gAnal.clean_ga_data(raw_ga_data, all_pics_names)
   if cleaned_ga_data:
+    print('------------------------')
+    print('------------------------')
+    print('------------------------')
+    print(cleaned_ga_data)
     current_user_df = add_new_output_to_df(current_user_df, cleaned_ga_data)
     current_user_df = ml.train_model_predict(current_user_df)
     sorted_df = current_user_df.sort_values(by=['interest'], axis=0, ascending=False, na_position='last')
@@ -86,11 +93,26 @@ def send_pics_front(request):
     picsData["picsData"].append([name, url])
   return JsonResponse(picsData)
 
+@csrf_exempt
+def add_pics_db_fb(request):
+  data = { "data" : "b" }
+  pics = request.FILES.getlist('file')
+  for pic in pics:
+    blob = bucket.blob(f'pics/{pic}')
+    blob.content_type = f'image/{pic.split(".")[-1]}'
+    blob.upload_from_file(pic.file)
+  return JsonResponse(data)
+
 
 @staff_member_required(login_url='admin:login', redirect_field_name='next')
 def add_pics_view(request):
+  if request.method == 'POST':
+    print(request.POST['images'])
+    print(request.FILES)
+    blob = bucket.get_blob(f'pics/pic.jpeg')
+    blob.upload_from_file(request.FILES)
   form = PicForm()
-  return render(request, 'main/admin-pics.html', {'form': form})
+  return render(request, 'main/non-react-templates/admin-pics.html', {'form': form})
 
 
 
