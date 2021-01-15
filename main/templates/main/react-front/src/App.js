@@ -6,14 +6,17 @@ import Socials from './components/socials/socials'
 import Intro from './components/intro/intro';
 import About from './components/about/about';
 import AdminPics from './pages/AdminPics/AdminPics';
+import Predictions from './pages/Predictions/Predictions';
 
 
 
 function App() {
   return (
     <>
-      <NavLink exact to='/editpics'>Edit Pics</NavLink>
-      <a href="/main/admin-add-pics">Admin Add Pics</a>
+      <NavLink className="nav-items" exact to="/main">Home</NavLink>
+      <NavLink className="nav-items" exact to="/editpics">Edit Pics</NavLink>
+      <NavLink className="nav-items" exact to="/predictions">Predictions</NavLink>
+      <a class="nav-items" href="http://localhost:8000/main/admin-add-pics">Admin Add Pics</a>
       <Route exact path='/main'
         render={() =>
           <div id="appDiv">
@@ -27,6 +30,11 @@ function App() {
       <Route exact path='/editpics'
         render={() => 
           <AdminPics />
+        } 
+      />
+      <Route exact path='/predictions'
+        render={() => 
+          <Predictions />
         } 
       />
     </>

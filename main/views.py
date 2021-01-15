@@ -10,6 +10,7 @@ import requests
 import json
 import uuid
 from datetime import datetime, timedelta
+import time
 import pytz
 from .models import Pic, PicForm, Tag, FBFileUpload
 from . import gAnal, ml
@@ -32,8 +33,6 @@ default_app = firebase_admin.initialize_app(fb_cred, {
 })
 
 bucket = storage.bucket('ld-dsite-gen.appspot.com')
-eastern = pytz.timezone('US/Eastern')
-
 
 def get_all_pics_db():
   all_pics_db = list(Pic.objects.all().values_list('pic_name', 'tag__tag_name', 'tag__intensity'))
@@ -68,27 +67,22 @@ def add_new_output_to_df(user_df, ga_data_dict):
 def index(request):
   return render(request, 'main/react-front/build/index.html')
 
-
+# expiration doesnt work for the png image
 def send_pics_front(request):
   current_user_df = get_or_update_user_df(request)
   raw_ga_data = gAnal.get_ga_data()
   all_pics_names = list(current_user_df.index)
   cleaned_ga_data = gAnal.clean_ga_data(raw_ga_data, all_pics_names)
   if cleaned_ga_data:
-    print('------------------------')
-    print('------------------------')
-    print('------------------------')
-    print(cleaned_ga_data)
     current_user_df = add_new_output_to_df(current_user_df, cleaned_ga_data)
     current_user_df = ml.train_model_predict(current_user_df)
     sorted_df = current_user_df.sort_values(by=['interest'], axis=0, ascending=False, na_position='last')
     sorted_df.to_pickle(os.path.join(BASE_DIR, 'main', 'templates', 'main', 'react-front', 'build', 'static', 'media', f'user_{request.user.id}_df.pkl'))
     all_pics_names = list(sorted_df.index)
-  exp_time = datetime.now() + timedelta(minutes=2)
-  exp_time = eastern.localize(exp_time)
   picsData = { "picsData": [  ] }
   for name in all_pics_names:
     blob = bucket.blob(f'pics/{name}')
+    exp_time = datetime.utcnow() + timedelta(seconds=10)
     url = blob.generate_signed_url(expiration=exp_time)
     picsData["picsData"].append([name, url])
   return JsonResponse(picsData)
@@ -96,11 +90,21 @@ def send_pics_front(request):
 @csrf_exempt
 def add_pics_db_fb(request):
   data = { "data" : "b" }
+  db_info_blob = request.FILES.get('dbInfo')
+  str_json_b = str(db_info_blob.read())
+  str_json = str_json_b[2:-1]
+  db_info = json.loads(str_json)
   pics = request.FILES.getlist('file')
-  for pic in pics:
-    blob = bucket.blob(f'pics/{pic}')
-    blob.content_type = f'image/{pic.split(".")[-1]}'
+  for index, pic in enumerate(pics):
+    blob = bucket.blob(f'pics/{pic.name}')
+    blob.content_type = f'image/{pic.name.split(".")[-1]}'
     blob.upload_from_file(pic.file)
+    pic_db = Pic.objects.create(pic_name=pic.name, description=db_info["descriptions"][pic.name])
+    if db_info["tagslists"][pic.name]:
+      tags = [Tag.objects.create(tag_name=tag, intensity=100, pics=pic_db) for tag in db_info["tagslists"][pic.name]]
+    for tag in tags:
+      tag.save()
+    pic_db.save()
   return JsonResponse(data)
 
 

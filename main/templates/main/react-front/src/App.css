@@ -3,3 +3,10 @@
   flex-direction: column;
   align-items: center;
 }
+.nav-items {
+  background-color: black;
+  border: solid black 0.2rem;
+  border-radius: 0.5rem;
+  margin: 2rem;
+  color: cornflowerblue;
+}
