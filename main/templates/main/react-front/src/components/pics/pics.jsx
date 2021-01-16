@@ -13,7 +13,7 @@ export default function Pics() {
         .then(({ picsData }) => setPics(picsData))
         let picsInterval = setInterval(() => {
             setPicsIntToggle(!picsIntToggle)
-        }, 30000)
+        }, 5000)
         return () => {
             clearInterval(picsInterval)
         }

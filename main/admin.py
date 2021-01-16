@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Pic, Tag
+from .models import Pic, Tag, UserInterestDF
 
 # Register your models here.
 
@@ -18,5 +18,6 @@ class PicAdmin(admin.ModelAdmin):
 
 admin.site.register(Tag)
 admin.site.register(Pic, PicAdmin)
+admin.site.register(UserInterestDF)
 
 
