@@ -17,7 +17,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 
+
 urlpatterns = [
+    # path('sentry-debug/', lambda x: pass),
     path('admin/', admin.site.urls),
     path('main/', include('main.urls')),
     path('', lambda request: redirect('main:index'))

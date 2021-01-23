@@ -14,9 +14,9 @@ function App() {
   return (
     <>
       <NavLink className="nav-items" exact to="/main">Home</NavLink>
-      <NavLink className="nav-items" exact to="/editpics">Edit Pics</NavLink>
-      <NavLink className="nav-items" exact to="/predictions">Predictions</NavLink>
-      <a class="nav-items" href="http://localhost:8000/main/admin-add-pics">Admin Add Pics</a>
+      <NavLink className="nav-items" exact to="/main/edit-pics">Edit Pics</NavLink>
+      <NavLink className="nav-items" exact to="/main/predictions">Predictions</NavLink>
+      <a className="nav-items" href="http://localhost:8000/main/admin-add-pics">Admin Add Pics</a>
       <Route exact path='/main'
         render={() =>
           <div id="appDiv">
@@ -27,12 +27,12 @@ function App() {
             <About />
           </div>
          } />
-      <Route exact path='/editpics'
+      <Route exact path='/main/edit-pics'
         render={() => 
           <AdminPics />
         } 
       />
-      <Route exact path='/predictions'
+      <Route exact path='/main/predictions'
         render={() => 
           <Predictions />
         } 

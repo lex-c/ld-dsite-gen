@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import ImageGallery from 'react-image-gallery';
 import * as PicService from '../../services/PicService';
+import * as AnalyticsService from '../../services/AnalyticsService'
 import './pics.css';
 import "react-image-gallery/styles/css/image-gallery.css"
 import $ from 'jquery';
 
 export default function Pics() {
     const [pics, setPics] = useState([])
-    const [picsIntToggle, setPicsIntToggle] = useState(false)
+    const [analyticsIntToggle, setAnalyticsIntToggle] = useState(false)
+    
     useEffect(() => {
         PicService.getPicSet()
-        .then(({ picsData }) => setPics(picsData))
-        let picsInterval = setInterval(() => {
-            setPicsIntToggle(!picsIntToggle)
-        }, 5000)
+        .then(res => {console.log(res); return res})
+        .then(pics => setPics(pics))
+    }, [])
+
+    useEffect(() => {
+        AnalyticsService.promptAnalysis()
+        let analyticsInterval = setInterval(() => {
+            setAnalyticsIntToggle(!analyticsIntToggle)
+        }, 3000)
         return () => {
-            clearInterval(picsInterval)
+            clearInterval(analyticsInterval)
         }
-    }, [picsIntToggle])    
+    }, [analyticsIntToggle])
     
     const setPicClass = (e) => {
         let picsInScroll = e.target.childNodes
@@ -31,9 +38,15 @@ export default function Pics() {
     }
     return (
         <>
-        <div class="wrapper">
-            <div class="scrolls" onScroll={setPicClass}>
+        <div className="wrapper">
+            <div className="scrolls" onScroll={setPicClass}>
+                {pics[0] ? 
+                <>
                 { pics.map((picData) => (<img src={picData[1]} id={picData[0]} className="scroll-pic inactive" alt="pic" />)) }
+                </>
+                :
+                <h3>Loading...</h3>
+                }
             </div>
         </div>
         {/* <ImageGallery 
