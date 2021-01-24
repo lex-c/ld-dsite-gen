@@ -150,14 +150,15 @@ def add_pics_db_fb(request):
     blob = bucket.blob(f'pics/{pic.name}')
     blob.content_type = f'image/{pic.name.split(".")[-1]}'
     blob.upload_from_file(pic.file)
-    pic_db = Pic.objects.create(pic_name=pic.name, description=db_info["descriptions"][pic.name])
+    pic_db = Pic(pic_name=pic.name, description=db_info["descriptions"][pic.name])
+    pic_db.save()
     pic_tagslist = db_info["tagslists"][pic.name]
+    tags = []
     if pic_tagslist:
       if len(pic_tagslist) > 0:
-        tags = [Tag.objects.create(tag_name=tag_info[0], intensity=tag_info[1], pics=pic_db) for tag_info in pic_tagslist if tag_info[0]]
+        tags = [Tag(tag_name=tag_info[0], intensity=tag_info[1], pics=pic_db) for tag_info in pic_tagslist if tag_info[0]]
     for tag in tags:
       tag.save()
-    pic_db.save()
   return JsonResponse(data)
 
 @csrf_exempt
@@ -182,7 +183,13 @@ def remove_pic_db_fb(request):
     return JsonResponse({"error": "fb"})
   return JsonResponse({"a": "b"})
 
-def get_users_list(request):
+
+def get_all_users(request):
+  all_users_id = list(User.objects.all().values_list('pk'))
+  return JsonResponse({ 'allUsers': all_users_id })
+
+
+def get_user_info(request):
   all_users_id_and_df = list(User.objects.all().select_related("userinterestdf").values_list('pk', "userinterestdf__user_df"))
   def json_to_df_map(tuple):
     if tuple[1]:
@@ -190,13 +197,26 @@ def get_users_list(request):
       print(df)
       user_int_dict = {  }
       for name in list(df.index):
-        user_int_dict[name] = df['interest'][name]
+        user_int_dict[name] = int(df['interest'][name])
       return (tuple[0], json.dumps(user_int_dict))
     else:
       return tuple
   all_users_id_and_df = list(map(json_to_df_map, all_users_id_and_df))
   print(all_users_id_and_df)
   return JsonResponse({"allUsers": all_users_id_and_df})
+
+def get_user_int_prediction(request, user_id, query_tags):
+  query_tags = query_tags.split('dfg67dfg')[1:]
+  def tags_map(tag_set):
+    return tag_set.split('rt45rt')
+  query_tags = list(map(tags_map, query_tags))
+  user_df_json = list(User.objects.filter(pk=user_id).select_related('userinterestdf').values_list('userinterestdf__user_df'))[0][0]
+  user_df = pd.read_json(user_df_json)
+  tags_in_df = list(user_df.columns)[:-1]
+  cleaned_query_tags = ml.clean_query_tags(tags_in_df, query_tags)
+  predicted_interest = ml.predict_interest(user_df, cleaned_query_tags)
+  return JsonResponse({'predictedInterest': predicted_interest})
+
 
 @staff_member_required(login_url='admin:login', redirect_field_name='next')
 def add_pics_view(request):

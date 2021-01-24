@@ -16,7 +16,6 @@ function App() {
       <NavLink className="nav-items" exact to="/main">Home</NavLink>
       <NavLink className="nav-items" exact to="/main/edit-pics">Edit Pics</NavLink>
       <NavLink className="nav-items" exact to="/main/predictions">Predictions</NavLink>
-      <a className="nav-items" href="http://localhost:8000/main/admin-add-pics">Admin Add Pics</a>
       <Route exact path='/main'
         render={() =>
           <div id="appDiv">

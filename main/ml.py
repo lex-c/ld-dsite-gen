@@ -59,3 +59,30 @@ def train_model_predict(df):
         # problem with if not enough predictions 
     print('predicted:     ', df)
     return df
+
+def clean_query_tags(tags_in_df, query_tags):
+    query_tags_names = [tags_info[0] for tags_info in query_tags]
+    new_arr = np.zeros((2,len(tags_in_df)), dtype=object)
+    new_arr[0] = tags_in_df
+    for i in range(len(tags_in_df)):
+        if new_arr[0][i] in query_tags_names:
+            new_arr[1][i] = query_tags[query_tags_names.index(new_arr[0][i])][1]
+    predict_df = pd.DataFrame(new_arr)
+    predict_df.columns = predict_df.iloc[0]
+    predict_df = predict_df.drop(labels=[0], axis=0)
+    print(predict_df)
+    return predict_df
+
+def predict_interest(user_df, cleaned_query_tags):
+    df_train = user_df.dropna()
+    X = np.array(df_train.drop(['interest'],1))
+    y = np.array(df_train['interest'])
+    if (len(X) >= 4):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
+    clf = svm.LinearSVR()
+    clf.fit(X, y)
+    np_predict = np.array(cleaned_query_tags)
+    prediction = clf.predict(np_predict)
+    prediction = int(prediction[0])
+    print(prediction)
+    return prediction
