@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 import time
 import pytz
 import random, string
+import threading
 import itertools
 import pandas as pd
 import numpy as np
@@ -26,7 +27,6 @@ from firebase_admin import storage, credentials
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
-
 
 # needs to be above firebase_initialize_app or that throws exception for running twice???
 def generate_random_string():
@@ -39,6 +39,17 @@ def run_once_every_five_calls(f):
       return f(*args, **kwargs)
     else:
       print('skipping')
+  return wrapper
+
+def run_once(f):
+  def wrapper(*args, **kwargs):
+    if not wrapper.has_run:
+      wrapper.has_run = True
+      return f(*args, **kwargs)
+    else:
+      print('skipping the getset')
+      pass
+  wrapper.has_run = False
   return wrapper
 
 @run_once_every_five_calls
@@ -66,8 +77,10 @@ default_app = firebase_admin.initialize_app(fb_cred, {
 
 bucket = storage.bucket()
 
+urls_timer = None
+
 def get_all_pics_db():
-  all_pics_db = list(Pic.objects.all().values_list('pic_name', 'tag__tag_name', 'tag__intensity'))
+  all_pics_db = list(Pic.objects.all().values_list('pic_name', 'tag__tag_name', 'tag__intensity', 'temp_url'))
   return all_pics_db
 
 def get_or_update_user_df(user):
@@ -117,26 +130,43 @@ def get_update_analysis(request):
   return JsonResponse(pics_int_dict)
 # expiration doesnt work for the png image
 def send_pics_front(request):
-  all_pics_list = get_all_pics_db()
-  all_pics_names = list(set([sublist[0] for sublist in all_pics_list]))
-  print("pics_name_before:     ", all_pics_names)
-  try:
-    current_user_df = pd.read_pickle(os.path.join(BASE_DIR, 'main', 'templates', 'main', 'react-front', 'build', 'static', 'media', f'user_{request.user.id}_df.pkl'))
-    if set(list(current_user_df.index)) == set(all_pics_names):
-      all_pics_names = list(current_user_df.index)
-  except Exception as e:
-    print(e)
-    pass
-  # all_pics_names = get_update_analysis(request)
-  print("pics_names_after:     ", all_pics_names)
-  picsData = { "picsData": [  ] }
+  get_set_temp_pic_urls()
+  all_pics_names_urls = list(Pic.objects.all().values_list('pic_name', 'temp_url'))
+  picsData = { "picsData": all_pics_names_urls }
+  # all_pics_names = [sublist[0] for sublist in all_pics_names_urls]
+  # all_pics_urls = [sublist[1] for sublist in all_pics_names_urls]
+  # all_pics_names = list(set([sublist[0] for sublist in all_pics_list]))
+  # print("pics_name_before:     ", all_pics_names)
+  # try:
+  #   current_user_df = pd.read_pickle(os.path.join(BASE_DIR, 'main', 'templates', 'main', 'react-front', 'build', 'static', 'media', f'user_{request.user.id}_df.pkl'))
+  #   if set(list(current_user_df.index)) == set(all_pics_names):
+  #     all_pics_names = list(current_user_df.index)
+  # except Exception as e:
+  #   print(e)
+  #   pass
+  # # all_pics_names = get_update_analysis(request)
+  # print("pics_names_after:     ", all_pics_names)
+  # picsData = { "picsData": [  ] }
+  # for name in all_pics_names:
+  #   blob = bucket.blob(f'pics/{name}')
+  #   exp_time = datetime.utcnow() + timedelta(minutes=30)
+  #   url = blob.generate_signed_url(expiration=exp_time)
+  #   print("url:----------------------------", url)
+  #   picsData["picsData"].append([name, url])
+  return JsonResponse(picsData)
+
+@run_once
+def get_set_temp_pic_urls():
+  global urls_timer
+  urls_timer = threading.Timer(18000, get_set_temp_pic_urls)
+  all_pics_names = list(Pic.objects.all().values_list('pic_name'))
+  all_pics_names = [sublist[0] for sublist in all_pics_names]
   for name in all_pics_names:
     blob = bucket.blob(f'pics/{name}')
-    exp_time = datetime.utcnow() + timedelta(minutes=30)
+    exp_time = datetime.utcnow() + timedelta(hours=12)
     url = blob.generate_signed_url(expiration=exp_time)
-    print("url:----------------------------", url)
-    picsData["picsData"].append([name, url])
-  return JsonResponse(picsData)
+    Pic.objects.filter(pic_name=name).update(temp_url=url)
+  pass
 
 @csrf_exempt
 def add_pics_db_fb(request):
@@ -150,7 +180,9 @@ def add_pics_db_fb(request):
     blob = bucket.blob(f'pics/{pic.name}')
     blob.content_type = f'image/{pic.name.split(".")[-1]}'
     blob.upload_from_file(pic.file)
-    pic_db = Pic(pic_name=pic.name, description=db_info["descriptions"][pic.name])
+    exp_time = datetime.utcnow() + timedelta(hours=12)
+    temp_url = blob.generate_signed_url(expiration=exp_time)
+    pic_db = Pic(pic_name=pic.name, description=db_info["descriptions"][pic.name], temp_url=temp_url)
     pic_db.save()
     pic_tagslist = db_info["tagslists"][pic.name]
     tags = []
@@ -163,8 +195,8 @@ def add_pics_db_fb(request):
 
 @csrf_exempt
 def remove_pic_db_fb(request):
-  unicode = request.body.decode('utf-8')
-  picName = json.loads(unicode)['picName']
+  in_unicode = request.body.decode('utf-8')
+  picName = json.loads(in_unicode)['picName']
   picList = None
   try:
     picList = Pic.objects.filter(pic_name=picName)

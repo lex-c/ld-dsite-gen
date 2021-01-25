@@ -10,10 +10,10 @@ from django.contrib.postgres.fields import JSONField
 # Create your models here.
 
 
-
 class Pic(models.Model):
     pic_name = models.TextField(max_length=2083)
     description = models.CharField(max_length=200)
+    temp_url = models.TextField(max_length=100000)
 
     def __str__(self):
         return f'{self.description}'
@@ -30,14 +30,6 @@ class Tag(models.Model):
 
     def __str__(self):
         return f'{self.tag_name}'
-# choices=[('latex', 'latex'), ('corporal', 'corporal'), ('cbt', 'cbt'), ('pain', 'pain'), ('legs', 'legs'), ('whips', 'whips'), ('leather', 'leather'), ('butt', 'butt'), ('boots', 'boots'), ('mommy', 'mommy'), ('nurse', 'nurse'),])
-
-# class FBFileUpload(FileUploadHandler):
-#     def receive_data_chunk(self, raw_data, start):
-#         return raw_data
-#     def file_complete(file, file_size):
-#         return UploadedFile(file=file, name='images', content_type='image/jpeg', size=file_size)
-# does not work
 
 class UserInterestDF(models.Model):
     user_df = JSONField(encoder=None)
