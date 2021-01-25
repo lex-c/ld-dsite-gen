@@ -21,7 +21,6 @@ import threading
 import itertools
 import pandas as pd
 import numpy as np
-import cv2
 import firebase_admin
 from firebase_admin import storage, credentials
 
