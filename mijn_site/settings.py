@@ -11,8 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os, django_heroku
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,13 +29,6 @@ ALLOWED_HOSTS = ['localhost', 'ld-dsite-gen.herokuapp.com']
 # FILE_UPLOAD_HANDLERS = ["django.core.files.uploadhandler.TemporaryFileUploadHandler"]
 
 # Application definition
-
-sentry_sdk.init(
-    dsn="https://b527738d47b3439b8da6519d6efb3eaf@o509773.ingest.sentry.io/5604741",
-    integrations=[DjangoIntegration()],
-    traces_sample_rate=1.0,
-    send_default_pii=True
-)
 
 
 INSTALLED_APPS = [
